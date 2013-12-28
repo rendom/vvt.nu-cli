@@ -15,7 +15,7 @@ var langs = [
     { ext: "h", lng:"c_cpp" },
     { ext: "css", lng:"css" },
     { ext: "html", lng:"HTML" },
-    { ext: "java", lng: "Java" },
+    { ext: "java", lng: "Java" },
     { ext: "js", lng: "JavaScript"},
     { ext: "json", lng: "JSON" },
     { ext: "php", lng: "PHP" },
@@ -23,9 +23,9 @@ var langs = [
     { ext: "rb", lng: "Ruby"},
     { ext: "scss", lng: "SCSS" },
     { ext: "pl", lng: "Perl" },
-    { ext: "sh", lng: "SH" },
+    { ext: "sh", lng: "SH" },
     { ext: "xml", lng: "XML" },
-    { ext: "sql", lng: "XML" }
+    { ext: "sql", lng: "XML" }
 ];
 
 
@@ -41,7 +41,6 @@ function getFileType(string){
     for(var i=0; i<langs.length;i++){
         if( langs[i].ext == match ) return langs[i].lng;
     }
-
     return 'text';
 }
 
@@ -67,7 +66,6 @@ function postRequest(dataObj){
     req.write(post_data);
     req.end();
 }
-
 
 var data;
 var lang = 'text';
@@ -103,6 +101,7 @@ if(ops.encrypt){
     postObj.encrypted=1;
     data = data.toString();
 }
+
 postObj.language = lang;
 postObj.code = data;
 postRequest(postObj);
