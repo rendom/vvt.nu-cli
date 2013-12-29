@@ -116,7 +116,6 @@ function processGetRequest(res){
     console.log("foo");
     res.setEncoding('utf-8');
     res.on('data', function(d){
-
         console.log(d);
     });
     req.end();
