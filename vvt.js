@@ -3,9 +3,11 @@ var CryptoJS = require("crypto-js/core");
 var AES = require("crypto-js/aes");
 var https = require('https');
 var fs = require('fs');
+var data;
 var ops = stdio.getopt({
-    'file': {key: 'f', description: 'Filename', args: 1},
-    'encrypt': {key: 'e', description: 'Encryption key', args: 1}
+    get:      {key: 'g', description: 'Paste code', args: 1},
+    file:     {key: 'f', description: 'Filename', args: 1},
+    encrypt:  {key: 'e', description: 'Encryption key', args: 1},
 });
 
 var langs = [
@@ -28,6 +30,33 @@ var langs = [
     { ext: "sql", lng: "XML" }
 ];
 
+var JsonFormatter = {
+    stringify: function (cipherParams) {
+        var jsonObj = {
+            ct: cipherParams.ciphertext.toString(CryptoJS.enc.Base64)
+        };
+        if (cipherParams.iv) {
+            jsonObj.iv = cipherParams.iv.toString(CryptoJS.enc.Base64);
+        }
+        if (cipherParams.salt) {
+            jsonObj.s = cipherParams.salt.toString(CryptoJS.enc.Base64);
+        }
+        return JSON.stringify(jsonObj);
+    },
+    parse: function (jsonStr) {
+        var jsonObj = JSON.parse(jsonStr);
+        var cipherParams = CryptoJS.lib.CipherParams.create({
+            ciphertext: CryptoJS.enc.Base64.parse(jsonObj.ct)
+        });
+        if (jsonObj.iv) {
+            cipherParams.iv = CryptoJS.enc.Base64.parse(jsonObj.iv)
+        }
+        if (jsonObj.s) {
+            cipherParams.salt = CryptoJS.enc.Base64.parse(jsonObj.s)
+        }
+        return cipherParams;
+    }
+};
 
 function exitWithMsg(msg){
     console.log(msg);
@@ -56,7 +85,7 @@ function postRequest(dataObj){
             'Content-Length': post_data.length
         }
     };
-    req = https.request(opt, function(res){
+    var req = https.request(opt, function(res){
         res.setEncoding('utf-8');
         res.on('data', function(d){
             console.log(d);
@@ -67,41 +96,55 @@ function postRequest(dataObj){
     req.end();
 }
 
-var data;
-var lang = 'text';
-var postObj = {};
-var JsonFormatter = {
-    stringify: function (cipherParams) {
-        var jsonObj = {
-            ct: cipherParams.ciphertext.toString(CryptoJS.enc.Base64)
-        };
-        if (cipherParams.iv) {
-            jsonObj.iv = cipherParams.iv.toString(CryptoJS.enc.Base64);
-        }
-        if (cipherParams.salt) {
-            jsonObj.s = cipherParams.salt.toString(CryptoJS.enc.Base64);
-        }
-        return JSON.stringify(jsonObj);
-    }
-};
+function getRequest(code){
+    https.get('https://vvt.nu/api/'+code, function(res) {
+        res.setEncoding('utf-8');
+        res.on('data', function(d) {
+            if(d == 'not found') exitWithMsg('Wrong code?');
+            if(ops.encrypt) d = AES.decrypt(d, ops.encrypt, {
+                format: JsonFormatter
+            }).toString(CryptoJS.enc.Utf8);
+            if(ops.file){}
+            else console.log(d);
+        });
+    }).on('error', function(e) {
+        console.error(e);
+    }).end();
+}
 
-if(ops.file){
-    if(fs.existsSync(ops.file)) {
-        data = fs.readFileSync(ops.file, 'utf8');
-        lang = getFileType(ops.file);
+function processGetRequest(res){
+    console.log("foo");
+    res.setEncoding('utf-8');
+    res.on('data', function(d){
+        console.log(d);
+    });
+    req.end();
+}
 
-    } else exitWithMsg('Wrong path?');
+if(ops.get){
+    getRequest(ops.get);
 }else{
-    var size = fs.fstatSync(process.stdin.fd).size;
-    if(size > 0) data = fs.readSync(process.stdin.fd, size)[0];
-    else exitWithMsg('No data inserted.. Feed stdin or use -f path/file');
-}
-if(ops.encrypt){
-    data = AES.encrypt(data, ops.encrypt, {format: JsonFormatter})
-    postObj.encrypted=1;
-    data = data.toString();
-}
+    var lang = 'text';
+    var postObj = {};
 
-postObj.language = lang;
-postObj.code = data;
-postRequest(postObj);
+    if(ops.file){
+        if(fs.existsSync(ops.file)) {
+            data = fs.readFileSync(ops.file, 'utf8');
+            lang = getFileType(ops.file);
+
+        } else exitWithMsg('Wrong path?');
+    }else{
+        var size = fs.fstatSync(process.stdin.fd).size;
+        if(size > 0) data = fs.readSync(process.stdin.fd, size)[0];
+        else exitWithMsg('No data inserted.. Feed stdin or use -f path/file');
+    }
+    if(ops.encrypt){
+        data = AES.encrypt(data, ops.encrypt, {format: JsonFormatter})
+        postObj.encrypted=1;
+        data = data.toString();
+    }
+
+    postObj.language = lang;
+    postObj.code = data;
+    postRequest(postObj);
+}
