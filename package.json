@@ -1,0 +1,33 @@
+{
+  "name": "vvt.nu",
+  "version": "0.1.0",
+  "description": "Paste your code easy and secure from your term. Supports AES encryption.",
+  "homepage": "https://vvt.nu",
+  "author": {
+    "name": "vvt.nu",
+    "email": "a@vvt.nu"
+  },
+  "bin": {
+    "vvt": "./bin/vvt"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rendom/vvt.nu-cli.git"
+  },
+  "keywords": [
+    "pastebin",
+    "vvt.nu",
+    "vvt",
+    "paste"
+  ],
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/rendom/vvt.nu-cli/issues"
+  },
+  "dependencies": {
+    "crypto-js":"*"
+  }
+}

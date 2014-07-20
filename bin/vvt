@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var stdio = require('stdio');
 var CryptoJS = require("crypto-js/core");
 var AES = require("crypto-js/aes");
