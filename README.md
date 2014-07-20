@@ -1,9 +1,10 @@
 Pastebin from CLI
 ==========
 
-**Installation**
+###Install
 `npm install -g vvt`
 
+###Usage
 **Get paste**
 `vvt -g c0d3`
 
